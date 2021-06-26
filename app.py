@@ -44,11 +44,26 @@ def precip():
     return jsonify(dict(last_12))
 
 
-# @app.route("/api/v1.0/stations")
-# def stations():
+@app.route("/api/v1.0/stations")
+def stations():
+    session = Session(engine)
+    stations = session.query(Station.station).distinct().all()
+    session.close()
+    list_stations = list(np.ravel(stations))
 
-# @app.route("/api/v1.0/tobs")
-# def tobs():
+    return jsonify(list_stations)
+
+
+
+@app.route("/api/v1.0/tobs")
+def tobs():
+    session = Session(engine)
+    year_ago = dt.datetime(2017,8,23) - dt.timedelta(days=365)
+    last_12_temps = session.query(Measurement.date, Measurement.tobs).filter(Measurement.date>year_ago).all()
+    session.close()
+    list_temps = list(np.ravel(last_12_temps))
+
+
 
 # @app.route("/api/v1.0/<start>")
 # def start():
