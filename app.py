@@ -70,8 +70,16 @@ def start_only(start):
     if valid_entry:
         temp_data = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date>=start).all()
         session.close()
-        temps_list = list(np.ravel(temp_data))
-        return jsonify(temps_list)
+
+        tmin =temp_data[0][0]
+        tavg ='{0:.4}'.format(temp_data[0][1])
+        tmax =temp_data[0][2]
+        result_printout =( ['Entered Start Date: ' + start,
+                            'Entered End Date: None',
+                            'The lowest Temperature was: '  + str(tmin) + ' F',
+                            'The average Temperature was: ' + str(tavg) + ' F',
+                            'The highest Temperature was: ' + str(tmax) + ' F'])
+        return jsonify(result_printout)
     else:
         return jsonify({"error": f"{start} date not found. Please format YYYY-MM-DD for dates between 2010-01-01 and 2017-08-23"}), 404
 
@@ -83,10 +91,23 @@ def start_end(start,end):
     if valid_start_end:
         temp_data = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date>=start).filter(Measurement.date<=end).all()
         session.close()
-        temps_list = list(np.ravel(temp_data))
-        return jsonify(temps_list)
+
+        tmin =temp_data[0][0]
+        tavg ='{0:.4}'.format(temp_data[0][1])
+        tmax =temp_data[0][2]
+        result_printout =( ['Entered Start Date: ' + start,
+                            'Entered End Date: ' + end,
+                            'The lowest Temperature was: '  + str(tmin) + ' F',
+                            'The average Temperature was: ' + str(tavg) + ' F',
+                            'The highest Temperature was: ' + str(tmax) + ' F'])
+        return jsonify(result_printout)
     else:
-        return jsonify({"error": f"{start} date not found. Please format YYYY-MM-DD for dates between 2010-01-01 and 2017-08-23"}), 404
+        if ('2017-08-23'<start)or(start<'2010-01-01'): 
+            return jsonify({"error": f"{start} start date not found. Please format start date YYYY-MM-DD for dates between 2010-01-01 and 2017-08-23"}), 404
+        if (end<start):
+            return jsonify({"error": f"{start} is after {end} or the dates are formatted incorrectly. Please format YYYY-MM-DD for dates between 2010-01-01 and 2017-08-23"}), 404
+        if ('2017-08-23'<end)or(end<'2010-01-01'):
+            return jsonify({"error": f"{end} end date not found. Please format end date YYYY-MM-DD for dates between 2010-01-01 and 2017-08-23"}), 404
 
 if __name__ == "__main__":
     app.run(debug=True)
